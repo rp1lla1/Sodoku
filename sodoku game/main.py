@@ -1,6 +1,6 @@
-import pygame
 import sys
 import time
+import pygame
 
 # Define colors and sizes
 backgroundColor = (251, 247, 245)
@@ -114,8 +114,23 @@ def draw_solution(win, number, pos, delay=0.5):
 def solve_sudoku(win):
     turn_user_numbers_blue()
 
-    def backtrack():
-        find = find_empty()
+    def find_empty_with_mrv():
+        # Find the empty cell with the fewest legal values remaining
+        min_options = 10  # More than the maximum possible options (1-9)
+        best_pos = None
+
+        for i in range(9):
+            for j in range(9):
+                if grid[i][j] == 0:
+                    num_options = sum(1 for n in range(1, 10) if is_valid(n, (i, j)))
+                    if num_options < min_options:
+                        min_options = num_options
+                        best_pos = (i, j)
+        return best_pos
+
+    def forward_checking():
+        # Use MRV to choose the next empty cell and propagate constraints
+        find = find_empty_with_mrv()
         if not find:
             return True  # Puzzle solved
         else:
@@ -124,17 +139,18 @@ def solve_sudoku(win):
         for i in range(1, 10):
             if is_valid(i, (row, col)):
                 grid[row][col] = i
-                draw_solution(win, i, (row, col), delay=0.5)  # Show the number with a delay
+                draw_solution(win, i, (row, col), delay=0.1)  # Show the number with a smaller delay
 
-                if backtrack():
+                if forward_checking():
                     return True
 
                 grid[row][col] = 0
-                draw_solution(win, 0, (row, col), delay=0.5)  # Erase the number with a delay
+                draw_solution(win, 0, (row, col), delay=0.1)  # Erase the number with a smaller delay
 
         return False
 
-    backtrack()
+    forward_checking()
+
 
 def main():
     pygame.init()
