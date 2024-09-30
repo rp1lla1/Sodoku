@@ -79,5 +79,70 @@ document.getElementById('clearButton').addEventListener('click', function() {
   updateGame();
 });
 
+// Function to check if a number can be placed in the grid
+function isValid(num, row, col) {
+  for (let i = 0; i < 9; i++) {
+    if (grid[row][i] === num || grid[i][col] === num) {
+      return false;
+    }
+  }
+
+  const startRow = Math.floor(row / 3) * 3;
+  const startCol = Math.floor(col / 3) * 3;
+  for (let i = startRow; i < startRow + 3; i++) {
+    for (let j = startCol; j < startCol + 3; j++) {
+      if (grid[i][j] === num) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+// Function to find the next empty cell
+function findEmptyCell() {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (grid[row][col] === 0) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+}
+
+// Sudoku solving function
+function solveSudoku() {
+  const emptyCell = findEmptyCell();
+  if (!emptyCell) {
+    return true;  // Puzzle solved
+  }
+
+  const { row, col } = emptyCell;
+
+  for (let num = 1; num <= 9; num++) {
+    if (isValid(num, row, col)) {
+      grid[row][col] = num;
+      if (solveSudoku()) {
+        return true;
+      }
+      grid[row][col] = 0;  // Backtrack
+    }
+  }
+
+  return false;
+}
+
+// Connect the "Solve" button to the solver
+document.getElementById('solveButton').addEventListener('click', function() {
+  if (solveSudoku()) {
+    updateGame();  // Re-draw the grid and numbers after solving
+    alert("Solved!");
+  } else {
+    alert("No solution exists!");
+  }
+});
+
 // Initial drawing of the grid and numbers
 updateGame();
